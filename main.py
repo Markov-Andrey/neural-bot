@@ -2,64 +2,54 @@ import requests
 import json
 import sys
 import io
-from data import search_knowledge
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-url = "http://localhost:8000/v1/chat/completions"
+def main():
+    url = "http://localhost:8001/v1/chat/completions"
+    user_query = input("Enter the product title: ").strip()
 
-user_query = input("Введите ваш вопрос: ").strip()
-knowledge_entries = search_knowledge(user_query)
+    with open("categories.json", "r", encoding="utf-8") as f:
+        weights = json.load(f)
 
-context_block = "\n".join(
-    f"- {entry['knowledge']}" for entry in knowledge_entries
-)
+    categories_list = list(weights.keys())
+    categories_str = ", ".join(categories_list)
 
-json_prompt = f"""
-Ниже представлен внутренний справочный материал компании:
-{context_block}
+    prompt = f"""
+You are an assistant that receives a product title and MUST assign it to EXACTLY ONE of these categories:
+{categories_str}.
 
-На его основе ответьте на вопрос клиента:
+Output ONLY the category name exactly as above, nothing else.
+Input product title:
 {user_query}
+
+Output category:
 """
 
-payload = {
-    "model": "nous-hermes-2",
-    "messages": [
-        {"role": "system", "content": "Ты помощник логистической компании Pradius Nova, Республика Беларусь, Минский район, Папернянский сельсовет, 45/1 "
-                                      "Ответ строго на русском языке. Соблюдай любезность и формализм в общении."},
-        {"role": "user", "content": json_prompt.strip()}
-    ],
-    "temperature": 0.8,
-    "top_p": 0.95,
-    "top_k": 40,
-    "max_tokens": 1000,
-    "stream": True
-}
+    payload = {
+        "messages": [
+            {"role": "system", "content": "You assign product category from fixed list."},
+            {"role": "user", "content": prompt.strip()}
+        ],
+        "temperature": 0.0,
+        "max_tokens": 25,
+        "stream": False
+    }
 
-headers = {
-    "Content-Type": "application/json"
-}
+    headers = {
+        "Content-Type": "application/json"
+    }
 
-response = requests.post(url, json=payload, headers=headers, stream=True)
+    response = requests.post(url, json=payload, headers=headers)
+    if response.status_code == 200:
+        data = response.json()
+        category = data["choices"][0]["message"]["content"].strip()
+        print(f"Product category: {category}")
 
-if response.status_code == 200:
-    try:
-        response.encoding = 'utf-8'
-        for line in response.iter_lines(decode_unicode=True):
-            if line:
-                if line.startswith("data: "):
-                    line = line[len("data: "):]
-                if line.strip() == "[DONE]":
-                    break
-                try:
-                    json_data = json.loads(line)
-                    delta = json_data["choices"][0]["delta"]
-                    content = delta.get("content", "")
-                    print(content, end='', flush=True)
-                except json.JSONDecodeError:
-                    print(f"[Ошибка разбора JSON]: {line}")
-    except Exception as e:
-        print(f"[Ошибка]: {e}")
-else:
-    print(f"Ошибка запроса: {response.status_code}")
+        weight = weights.get(category, 1000)
+        print(f"Predicted weight (grams): {weight}")
+    else:
+        print(f"Request error: {response.status_code}")
+
+if __name__ == "__main__":
+    main()
