@@ -3,6 +3,7 @@ from services.db_connect import get_oracle_connection
 from db import get_all_weights
 from services.sql_request import art_select, art_update
 from services.log import logger, cleanup_old_logs
+import time
 
 
 def sum_weights_by_name(name, weights_dict, phrases, single_words):
@@ -43,8 +44,8 @@ def main():
     single_words = [k for k in weights_dict if (' ' not in k) and ('-' not in k)]
 
     updated = 0
-    first_id = rows[0][0] if rows else None
-    last_id = rows[-1][0] if rows else None
+    first_id = rows[0][0]
+    last_id = rows[-1][0]
 
     try:
         for id, name, net_weight in rows:
@@ -58,14 +59,18 @@ def main():
                 updated += 1
             except Exception as e:
                 logger.error(f"ERROR: ID {id}: {e}")
+                print(f"ERROR: ID {id}: {e}")
 
         conn.commit()
-        if first_id is not None and last_id is not None:
-            logger.info(f"UPD ID's: {first_id} → {last_id}, total: {updated}")
+
+        msg = f"UPD ID's: {first_id} → {last_id}, total: {updated}"
+        logger.info(msg)
+        print(msg)
 
     except Exception as e:
         conn.rollback()
         logger.error(f"ERROR: {e}")
+        print(f"ERROR: {e}")
 
     finally:
         cursor.close()
