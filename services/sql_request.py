@@ -1,13 +1,13 @@
 # Возвращает SQL-запрос для выбора артикулов с весом 200, без слова 'mix' в названии
-def art_select():
-    return """
+def art_select(rownum):
+    return f"""
         SELECT ID, NAME, NET_WEIGHT
         FROM ART
         WHERE CLIENT_ID IN (497, 407, 501)
           AND NAME IS NOT NULL
           AND NET_WEIGHT = 200
           AND LOWER(NAME) NOT LIKE '%mix%'
-          AND ROWNUM <= 1000
+          AND ROWNUM <= {rownum}
     """
 
 # Возвращает SQL-запрос для обновления веса (нетто и брутто) по ID артикула

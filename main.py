@@ -31,15 +31,20 @@ def sum_weights_by_name(name, weights_dict, phrases, single_words):
 def main():
     target_weight = 200
     no_weight = 204
+    rownum = 1000
 
     conn = get_oracle_connection()
     cursor = conn.cursor()
-    cursor.execute(art_select())
+    cursor.execute(art_select(rownum))
     rows = cursor.fetchall()
 
     weights_dict = get_all_weights()
     phrases = [k for k in weights_dict if (' ' in k) or ('-' in k)]
     single_words = [k for k in weights_dict if (' ' not in k) and ('-' not in k)]
+
+    updated = 0
+    first_id = rows[0][0] if rows else None
+    last_id = rows[-1][0] if rows else None
 
     try:
         for id, name, net_weight in rows:
@@ -50,11 +55,13 @@ def main():
 
             try:
                 cursor.execute(art_update(), {"weight": summed_weight, "id": id})
-                logger.info(f"UPD: id={id} name='{name}' weight={summed_weight}")
+                updated += 1
             except Exception as e:
                 logger.error(f"ERROR: ID {id}: {e}")
 
         conn.commit()
+        if first_id is not None and last_id is not None:
+            logger.info(f"UPD ID's: {first_id} → {last_id}, total: {updated}")
 
     except Exception as e:
         conn.rollback()
