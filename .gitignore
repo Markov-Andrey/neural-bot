@@ -1,2 +1,5 @@
 /venv/
 /llama.cpp/
+/.env
+/logs/
+/logs/*
