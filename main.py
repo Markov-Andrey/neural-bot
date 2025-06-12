@@ -39,6 +39,13 @@ def main():
     cursor.execute(art_select(rownum))
     rows = cursor.fetchall()
 
+    if not rows:
+        logger.info("No data, exit")
+        print("No data, exit")
+        cursor.close()
+        conn.close()
+        return
+
     weights_dict = get_all_weights()
     phrases = [k for k in weights_dict if (' ' in k) or ('-' in k)]
     single_words = [k for k in weights_dict if (' ' not in k) and ('-' not in k)]
