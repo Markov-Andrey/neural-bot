@@ -3,7 +3,6 @@ from services.db_connect import get_oracle_connection
 from db import get_all_weights
 from services.sql_request import art_select, art_update
 from services.log import logger, cleanup_old_logs
-import time
 
 
 def sum_weights_by_name(name, weights_dict, phrases, single_words):
