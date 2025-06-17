@@ -1,7 +1,5 @@
 from services.clean import normalize_text
-from services.db_connect import get_oracle_connection
-from db import get_all_weights
-from services.sql_request import art_select, art_update
+from services.db import get_oracle_connection, get_all_weights, art_select, art_update
 from services.log import logger, cleanup_old_logs
 
 
@@ -31,12 +29,12 @@ def sum_weights_by_name(name, weights_dict, phrases, single_words):
 def main():
     target_weight = 200
     no_weight = 204
-    rownum = 1000
+    max_rows = 1000
 
     conn = get_oracle_connection()
     cursor = conn.cursor()
-    cursor.execute(art_select(rownum))
-    rows = cursor.fetchall()
+
+    rows = art_select(max_rows)
 
     if not rows:
         logger.info("No data, exit")
@@ -61,7 +59,7 @@ def main():
                 summed_weight = no_weight
 
             try:
-                cursor.execute(art_update(), {"weight": summed_weight, "id": id})
+                art_update(id, summed_weight)
                 updated += 1
             except Exception as e:
                 logger.error(f"ERROR: ID {id}: {e}")
