@@ -37,8 +37,6 @@ def main():
     rows = art_select(max_rows)
 
     if not rows:
-        logger.info("No data, exit")
-        print("No data, exit")
         cursor.close()
         conn.close()
         return
