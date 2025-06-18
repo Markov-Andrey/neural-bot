@@ -42,6 +42,7 @@ function main() {
         $rows = $db->artSelect($maxRows);
 
         if (empty($rows)) {
+            echo "INFO: No data" . PHP_EOL;
             return;
         }
 
