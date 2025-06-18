@@ -1,6 +1,7 @@
 Анализатор веса и использование собранного словаря для обновления БД
 
 табл и инкремент:
+
 CREATE TABLE ART_AVG_WEIGHTS (
                                  ID NUMBER PRIMARY KEY,
                                  NAME VARCHAR2(255) NOT NULL UNIQUE,
@@ -18,3 +19,7 @@ BEGIN
     END IF;
 END;
 /
+
+`index.php` - выполнение скрипта на обновление, лимит 1000 записей в транзакции
+
+`import.php` - перегнать записи из `cache.json` в БД (1-разовый скрипт)
