@@ -30,7 +30,7 @@ class Database {
 
         $dsn = "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={$host})(PORT={$port}))(CONNECT_DATA=(SID={$sid})))";
 
-        $this->conn = oci_connect($user, $password, $dsn);
+        $this->conn = oci_connect($user, $password, $dsn, 'AL32UTF8');
 
         if (!$this->conn) {
             $e = oci_error();
